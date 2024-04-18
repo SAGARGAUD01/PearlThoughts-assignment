@@ -1,0 +1,142 @@
+### Setting Up the Project
+
+1. Create Project Directory
+   bash
+   mkdir outpatient-appointment-system
+   cd outpatient-appointment-system
+   
+
+2. Initialize Node.js Project
+   bash
+   npm init -y
+   
+
+3. Install Express.js
+   bash
+   npm install express
+   
+
+4. Create the Main App File
+   Create a file named `app.js` in the project root.
+
+### Implementing API Endpoints
+Next, let's implement the required API endpoints using Express.js.
+
+#### `app.js`
+javascript
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Mock data for doctors and appointments (replace with database)
+let doctors = [
+  { id: 1, name: 'Dr. Smith', specialty: 'General Medicine', location: 'City Hospital', weekly_capacity: 20 },
+  { id: 2, name: 'Dr. Johnson', specialty: 'Pediatrics', location: 'City Hospital', weekly_capacity: 15 }
+];
+
+let appointments = [];
+
+// Middleware to parse JSON bodies
+app.use(express.json());
+
+// Endpoint to list all doctors
+app.get('/api/doctors', (req, res) => {
+  res.json(doctors);
+});
+
+// Endpoint to get details of a specific doctor
+app.get('/api/doctors/:doctorId', (req, res) => {
+  const doctorId = parseInt(req.params.doctorId);
+  const doctor = doctors.find(doc => doc.id === doctorId);
+
+  if (!doctor) {
+    return res.status(404).json({ message: 'Doctor not found' });
+  }
+
+  res.json(doctor);
+});
+
+// Endpoint to check doctor's availability
+app.get('/api/doctors/:doctorId/availability', (req, res) => {
+  const doctorId = parseInt(req.params.doctorId);
+  const doctor = doctors.find(doc => doc.id === doctorId);
+
+  if (!doctor) {
+    return res.status(404).json({ message: 'Doctor not found' });
+  }
+
+  // Mock available slots (replace with actual logic to calculate slots)
+  const availableSlots = ['2024-04-20T18:00:00', '2024-04-20T19:00:00'];
+
+  res.json({ doctorId, availableSlots });
+});
+
+// Endpoint to book an appointment
+app.post('/api/appointments', (req, res) => {
+  const { doctorId, patientName, dateTime } = req.body;
+
+  // Validate request body
+  if (!doctorId || !patientName || !dateTime) {
+    return res.status(400).json({ message: 'Missing required fields' });
+  }
+
+  const doctor = doctors.find(doc => doc.id === doctorId);
+  if (!doctor) {
+    return res.status(404).json({ message: 'Doctor not found' });
+  }
+
+  // Create new appointment
+  const newAppointment = {
+    id: appointments.length + 1,
+    doctorId,
+    patientName,
+    dateTime,
+    status: 'pending'
+  };
+
+  appointments.push(newAppointment);
+  res.status(201).json(newAppointment);
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
+
+
+### Running the Application
+To run the application:
+
+1. Save the `app.js` file.
+2. Start the server:
+   bash
+   node app.js
+   
+
+### Testing the Endpoints
+You can now test the implemented endpoints using tools like Postman or curl.
+
+1. List Doctors
+   
+   GET http://localhost:3000/api/doctors
+   
+
+2. Get Doctor Detail
+   
+   GET http://localhost:3000/api/doctors/1
+   
+
+3. Check Doctor's Availability
+
+   GET http://localhost:3000/api/doctors/1/availability?start_date=2024-04-20&end_date=2024-04-22
+  
+
+4. Book Appointment
+   
+   POST http://localhost:3000/api/appointments
+   Body:
+   {
+     "doctorId": 1,
+     "patientName": "John Doe",
+     "dateTime": "2024-04-20T18:00:00"
+   }
